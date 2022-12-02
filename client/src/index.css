@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components{
+	.msg{
+		border-radius: 10px;
+		position: relative;
+		@apply p-3 max-w-[250px] w-max
+	}
+	.msg.self{
+		border-top-right-radius: 0px ;
+		align-self: flex-end;
+		@apply bg-gray-700 text-white
+	}	
+	.msg.away{
+		border-top-left-radius: 0px ;
+		align-self: flex-start;
+		@apply bg-gray-800 text-white
+	}
+
+	.msg::after{
+		content: attr(data-name);
+		@apply absolute bottom-0 translate-y-3 bg-gray-400 px-1 text-black rounded-md text-sm
+	}
+	.msg.self::after{
+		@apply right-2
+	}
+	.msg.away::after{
+		@apply left-2
+	}
+
+}
