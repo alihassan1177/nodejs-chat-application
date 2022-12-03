@@ -18,7 +18,12 @@ io.on("connection", (socket)=>{
 	console.log(`User connected at ${socket.id} `)
 
 	socket.on("join_room", (data)=> {
+		socket.join(data)
+	})
+
+	socket.on("send_message", (data)=>{
 		console.log(data)
+		socket.to(data.roomID).emit("received_message", data)
 	})
 
 	socket.on("disconnect", ()=>{

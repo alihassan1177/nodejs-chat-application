@@ -1,4 +1,4 @@
-import {useState} from "react"
+import {useState, useEffect} from "react"
 import io from "socket.io-client"
 
 const socket = io.connect("http://localhost:3000")
@@ -9,6 +9,7 @@ export default function App(){
   const [room, setRoom] = useState("")
   const [roomJoined, setRoomJoined] = useState(false)
   const [message, setMessage] = useState("")
+  const [messageList, setMessageList] = useState([])
 
   function joinRoom(){
     if(username !== "" && username.length > 2 && room !== ""){
@@ -17,7 +18,7 @@ export default function App(){
     }
   }
 
-  function sendMessage(){
+  async function sendMessage(){
     if(message !== ""){
       const messageData = {
         roomID : room,
@@ -25,10 +26,19 @@ export default function App(){
         message : message,
         time : new Date().toLocaleTimeString()
       }
-      console.log(messageData)
+      await socket.emit("send_message", messageData)
+      setMessageList((list) => [...list, messageData]);
+      console.log(messageList)
     }
     setMessage("")
   }
+
+  useEffect(()=>{
+    socket.on('received_message', (data)=>{
+      setMessageList((list) => [...list, data]);
+      console.log("Message Sent")
+    })
+  }, [])
 
   return <div className="h-screen bg-gray-900 grid place-items-center">
     <div className="max-w-[400px] w-full min-h-[400px] overflow-hidden bg-gray-600 rounded-md">
@@ -48,6 +58,8 @@ export default function App(){
               message={message}
               setMessage={setMessage}
               sendMessage={sendMessage}
+              setMessageList={setMessageList}
+              messageList={messageList}
             />
       }
     </div>
@@ -69,16 +81,17 @@ function LoginComponent({username, setUsername, room, setRoom, joinRoom }){
  </div> 
 }
 
-function ChatComponent({socket, username, room, message, setMessage, sendMessage}){
+function ChatComponent({socket, username, room, message, setMessage, sendMessage, setMessageList, messageList}){
+
   return <div className="relative h-full">
     <h1 className="font-bold p-3 text-white text-2xl bg-gray-800">Live Chat</h1>
     <div className="h-[300px] overflow-y-scroll p-3 flex flex-col gap-3">
-      <p data-name="Ali Hassan"  className="msg self">
-      hi there how are you and did you completed the project
-      </p>
-      <p data-name="Asad"  className="msg away">
-        I am Great and No I am currently working on it
-      </p>
+      {/* messageList.map((msg, index) => {
+        return   <p key={index} data-name={msg.author}  className={msg.author == username ? "msg self" : "msg away"}>
+            {msg.message}
+      </p>   
+      }) */}
+
     </div>
     <div className="bg-gray-700 flex p-2 gap-1">
       <textarea onChange={(e)=>setMessage(e.target.value)} value={message}  className="rounded-md p-1" cols="22" rows="1"></textarea>
